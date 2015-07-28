@@ -1,0 +1,22 @@
+{
+  "name": "microblog",
+  "version": "0.0.0",
+  "homepage": "https://github.com/wtyang/microblog",
+  "authors": [
+    "Tianyang <wang.tianyang@theadventus.com>"
+  ],
+  "moduleType": [
+    "node"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "~3.3.5"
+  }
+}
