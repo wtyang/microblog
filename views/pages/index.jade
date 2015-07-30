@@ -11,24 +11,32 @@ block content
 					.panel-body
 						.row
 							form.form-horizontal(method="post",action="/post")
+								-if(!user){
+									input(type="hidden" name=[author] value="visitor")
+								-}else{
+									input(type="hidden" name=[author] value="#{user.name}")
+								-}
 								h5 有什么新鲜事想告诉大家?
 								.form-group
 									.col-sm-12
-										textarea.form-control(rows=3)
+										textarea.form-control(rows=3,name="post[content]")
 								.form-group
 									.col-sm-2.col-sm-offset-10
-										button.form-control.btn.btn-primary 发布
+										button.form-control.btn.btn-primary(type="submit") 发布
 				each item in posts
 					.panel.post-item
 						.panel-body
 							.row
 								.col-xs-2.text-center
-									a(href='/user/#{item.user.id}',target="_blank")
-										img(src='#{item.user.face}')
+									a(href='/user/#{item.author.id}',target="_blank")
+										img(src='#{item.author.face}')
 								.col-xs-10
 									.post-content
-										p= item.user.name
-										span= item.content
+										p= item.author.name
+										p= item.content
+										p.text-right
+											small 
+												| 发布于: #{item.date}
 				.row.show-grid
 					nav.col-sm-12
 						ul.pager
