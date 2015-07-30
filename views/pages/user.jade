@@ -1,0 +1,22 @@
+extends ../layout
+
+block content
+	.container
+		.col-sm-6.col-sm-offset-3
+			.panel.panel-info
+				.panel-heading
+					h3.panel-title 用户中心
+				.panel-body
+					.form-horizontal
+						.form-group
+							label.control-label.col-sm-3 ID
+							.form-control-static.col-sm-9
+								span #{user.id}
+						.form-group
+							label.control-label.col-sm-3 昵称
+							.form-control-static.col-sm-9
+								span #{user.name}
+						.form-group
+							label.control-label.col-sm-3 头像
+							.form-control-static.col-sm-9
+								img(src="#{user.face}")

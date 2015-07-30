@@ -1,5 +1,48 @@
 extends ../layout
-
 block content
-  h1= title
-  p Welcome to #{title}
+	.container
+		.row
+			nav.col-sm-2
+				ul
+					li
+						a(href='/') Home
+			section.col-sm-7.section-main
+				.panel
+					.panel-body
+						.row
+							form.form-horizontal(method="post",action="/post")
+								h5 有什么新鲜事想告诉大家?
+								.form-group
+									.col-sm-12
+										textarea.form-control(rows=3)
+								.form-group
+									.col-sm-2.col-sm-offset-10
+										button.form-control.btn.btn-primary 发布
+				each item in posts
+					.panel.post-item
+						.panel-body
+							.row
+								.col-xs-2.text-center
+									a(href='/user/#{item.user.id}',target="_blank")
+										img(src='#{item.user.face}')
+								.col-xs-10
+									.post-content
+										p= item.user.name
+										span= item.content
+				.row.show-grid
+					nav.col-sm-12
+						ul.pager
+							li.previous.disabled
+								a(href="#")
+									span(aria-hidden="true") &#8592;
+									| 上一页
+							li.next
+								a(href="#")
+									| 下一页
+									span(aria-hidden="true") &#8594;
+			aside.col-sm-3
+				article.user-info
+					each item in users
+						p= item.name
+				article.ad
+				article.announcement

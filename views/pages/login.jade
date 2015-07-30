@@ -1,0 +1,28 @@
+extends ../layout
+
+block content
+	.container
+		.row
+			.col-sm-6.col-sm-offset-3.col-login.panel
+				.panel-body
+					form.form-horizontal(method="post",action="/login")
+						input(type="hidden",name="user[id]",value="0000")
+						.form-group
+							h2.text-center Please sign in
+						.form-group
+							label.col-sm-3.control-label(for="userName") User Name
+							.col-sm-9
+								input#userName.form-control(type="text", placeholder="User name", required="", autofocus="",name="user[name]")
+						.form-group
+							label.col-sm-3.control-label(for="inputPassword") Password
+							.col-sm-9
+								input#inputPassword.form-control(type="password", placeholder="Password", required="",name="user[password]")
+						.form-group
+							.col-sm-9.col-sm-offset-3
+								.checkbox
+									label
+										input(type="checkbox", value="remember-me")
+										| Remember me
+						.form-group
+							.col-sm-2.col-sm-offset-3
+								button.btn.btn-sm.btn-primary.btn-block.pull-left(type="submit") Sign in
