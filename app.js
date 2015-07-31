@@ -5,11 +5,11 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
-var expressMongoose = require('express-mongoose');
 
 var routes = require('./routes/index');
-
+var db = mongoose.connect("mongodb://localhost/microblog");
 var app = express();
+app.locals.moment = require('moment')
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views/pages'));

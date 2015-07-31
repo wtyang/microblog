@@ -9,10 +9,15 @@ var postsSchema = new Schema({
 	content : String,
 	date : {
 		type: Date,
-		default: Date.now
+		default: Date.now()
 	}
 });
 
+postsSchema.statics = {
+	fetch : function(cb){
+		return this.find({}).sort("-date").exec(cb);
+	}
+}
 Posts = mongoose.model('Posts',postsSchema);
 
 module.exports = Posts;

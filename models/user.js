@@ -13,7 +13,7 @@ var userSchema = new Schema({
 	}
 });
 userSchema.pre('save',function(next){
-	next()
+	next();
 })
 userSchema.statics = {
 	fetch : function(cb){
