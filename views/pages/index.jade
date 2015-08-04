@@ -51,6 +51,7 @@ block content
 			aside.col-sm-3
 				article.user-info
 					each item in users
-						p= item.name
+						p
+							a(href="/user/#{item._id}")= item.name
 				article.ad
 				article.announcement

@@ -4,7 +4,10 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var session = require('express-session');
 var mongoose = require('mongoose');
+var parseurl = require('parseurl');
+
 
 var routes = require('./routes/index');
 var db = mongoose.connect("mongodb://localhost/microblog");
@@ -24,7 +27,36 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'bower_components')));
-
+// Session
+app.use(session({ 
+  secret: 'microblog', 
+  cookie: { 
+    maxAge: 600000 
+  }
+}));
+app.use(session({
+  secret: 'microblog',
+  resave: false,
+  saveUninitialized: true
+}));
+//Cookie
+app.use(cookieParser());
+app.use(function (req, res, next) {
+  var views = req.session.views
+ 
+  if (!views) {
+    views = req.session.views = {}
+  }
+ 
+  // get the url pathname 
+  var pathname = parseurl(req).pathname
+ 
+  // count the views 
+  views[pathname] = (views[pathname] || 0) + 1
+ 
+  next()
+})
+// Routers
 app.use('/', routes);
 
 // catch 404 and forward to error handler

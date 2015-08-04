@@ -12,7 +12,7 @@ nav.navbar.navbar-default.navbar-fixed-top
 				li.active
 					a(href="/") Home  
 			ul.nav.navbar-nav.navbar-right
-				- if(!user){
+				- if(!logeduser){
 				li
 					a(href="/login") Login
 				li
@@ -21,7 +21,7 @@ nav.navbar.navbar-default.navbar-fixed-top
 						span.sr-only (current)
 				- }else{
 				li
-					a(href="/user/#{user.name}") #{user.name}
+					a(href="/user/#{logeduser._id}") #{logeduser.name}
 				li
 					a(href="/logout") Logout
 				- }
