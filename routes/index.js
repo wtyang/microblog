@@ -3,37 +3,69 @@ var moment = require('moment');
 var session = require('express-session');
 var cookie = require('cookie-parser');
 var multiparty = require('connect-multiparty');
+var crypto = require('crypto');
 var mongoose = require('mongoose');
 var router = express.Router();
 var Users = require('../models/user');
 var Posts = require('../models/posts');
 
+
+var limitItems = 5,//分页每页显示几条留言
+    numberOfPages = 5; //分页显示几页
 /* 首页get */
 router.get('/', function(req, res, next) {
-    var logeduser = req.session.user;
+    var logeduser = req.session.user, //登录的用户对象
+        currentPage = 1, //当前第几页
+        totalPages ; //总页数
     if(!logeduser){
         res.redirect("/login");
+    }else{
+        //查询当前页码的留言列表
+        Posts.fetchLimit(limitItems,currentPage,function(err, postslimit, next) {
+            if (err) {
+                console.log(err);
+            } else {
+                //查询所有留言列表
+                Posts.fetch(function(err,posts){
+                    if(err){
+                        console.log(err);
+                    }else{
+                        //查询所有用户列表
+                        Users.fetch(function(err, users) {
+                            if (err) {
+                                req.flash('error', err);
+                            }else{
+                                //渲染页面
+                                var totalPages = Math.ceil(posts.length/limitItems); //总页面数
+                                res.render('index', {
+                                    title: 'MicroBlog',
+                                    posts: postslimit, //当前页面显示的留言列表
+                                    users: users, //所有用户列表
+                                    logeduser : logeduser,// 登录的用户对象
+                                    pagination: { //分页信息
+                                        currentPage : currentPage,//当前第几页
+                                        totalPages : totalPages, //总页数
+                                        numberOfPages : totalPages > numberOfPages ? numberOfPages : totalPages //分页显示几页
+                                    }
+                                });
+                            }
+                        });
+                    }
+                })
+            }
+        })
     }
-    Posts.fetch(function(err, posts, next) {
-        if (err) {
-            req.flash('error', err);
-        } else {
-            Users.fetch(function(err, users) {
-                if (err) {
-                    req.flash('error', err);
-                }else{
-                    console.log(posts);
-                    res.render('index', {
-                        title: 'MicroBlog',
-                        posts: posts,
-                        users: users,
-                        logeduser : logeduser
-                    });
-                }
-            });
-        }
-    })
 });
+
+router.post('/',function(req,res,next){
+    if(req.body.currentPage){
+        //获取当前分页页码，返回当前分页留言列表
+        var currentPage = req.body.currentPage;
+        Posts.fetchLimit(limitItems,currentPage,function(err,limitposts){
+            res.send(limitposts);
+        })
+    }
+})
 
 //注册get
 router.get('/reg', function(req, res, next) {

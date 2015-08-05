@@ -44,3 +44,6 @@ img{
 .post-item{
 	background: #f8f8f8;
 }
+.pagination a{
+	cursor: pointer;
+}

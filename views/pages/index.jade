@@ -23,31 +23,61 @@ block content
 								.form-group
 									.col-sm-2.col-sm-offset-10
 										button.form-control.btn.btn-primary(type="submit") 发布
-				each item in posts
-					.panel.post-item
-						.panel-body
-							.row
-								.col-xs-2.text-center
-									a(href='/user/#{item.author._id}',target="_blank")
-										img(src='#{item.author.face}')
-								.col-xs-10
-									.post-content
-										p= item.author.name
-										p= item.content
-										p.text-right
-											small 
-												| 发布于: #{moment(item.date).format('llll')}
+				#posts-list
+					each item in posts
+						.panel.post-item
+							.panel-body
+								-if(logeduser && (logeduser._id == item.author._id) ){
+									.close x
+								-}
+								.row
+									.col-xs-2.text-center
+										a(href='/user/#{item.author._id}',target="_blank")
+											img(src='#{item.author.face}')
+									.col-xs-10
+										.post-content
+											p= item.author.name
+											p= item.content
+											p.text-right
+												small 
+													| 发布于: #{moment(item.date).format('llll')}
 				.row.show-grid
-					nav.col-sm-12
-						ul.pager
-							li.previous.disabled
-								a(href="#")
-									span(aria-hidden="true") &#8592;
-									| 上一页
-							li.next
-								a(href="#")
-									| 下一页
-									span(aria-hidden="true") &#8594;
+					nav.col-sm-12.text-center
+						ul.pagination#pagination
+						script.
+							$(function(){
+								//分页功能
+								var options = {
+									currentPage:#{pagination.currentPage},
+									totalPages:#{pagination.totalPages},
+									numberOfPages:#{pagination.numberOfPages},
+									bootstrapMajorVersion: 3,
+									onPageClicked: function(e,originalEvent,type,page){
+										$.ajax({
+											url: '/',
+											type: 'post',
+											data: {
+												currentPage: page
+											},
+											success: function (data) {
+												var list = '';
+												for(item in data){
+													list+='<div class="panel post-item"><div class="panel-body"><div class="row"><div class="col-xs-2 text-center">';
+													list+='<a href="/user/'+data[item].author._id+'"  target="_blank">';
+													list+='<img src="'+data[item].author.face+'"></a>';
+													list+='</div><div class="col-xs-10"><div class="post-content"><p>';
+													list+=data[item].author.name+'</p><p>';
+													list+=data[item].content+'</p><p class="text-right"><small> 发布于: ';
+													list+=moment(data[item].date).format("llll");
+													list+='</small></p></div></div></div></div></div>';
+												}
+												$("#posts-list").html(list);
+											}
+										});
+									}
+								}
+								$('#pagination').bootstrapPaginator(options);
+							})
 			aside.col-sm-3
 				article.user-info
 					each item in users

@@ -13,18 +13,13 @@ var userSchema = new Schema({
 		default : Date.now()
 	}
 });
-userSchema.pre('save',function(next){
-	next();
-})
+
 userSchema.statics = {
 	fetch : function(cb){
 		return this.find({}).exec(cb);
 	},
 	findByName: function(name,cb){
 		return this.findOne({name:name}).exec(cb);
-	},
-	findById: function(id,cb){
-		return this.findOne({_id:id}).exec(cb);
 	}
 }
 var User = mongoose.model('User',userSchema);
