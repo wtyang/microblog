@@ -18,11 +18,11 @@ router.get('/', function(req, res, next) {
         if (err) {
             req.flash('error', err);
         } else {
-            console.log('1----------------------');
             Users.fetch(function(err, users) {
                 if (err) {
                     req.flash('error', err);
                 }else{
+                    console.log(posts);
                     res.render('index', {
                         title: 'MicroBlog',
                         posts: posts,
@@ -58,7 +58,6 @@ router.post('/reg', function(req, res, next) {
                     req.flash('error', err);
                 } else {
                     req.session.user = _user;
-                    console.log(req.session);
                     res.redirect('/');
                 }
             });
@@ -129,7 +128,6 @@ router.get('/user/:id', function(req, res, next) {
     if(!logeduser){
         res.redirect("/login");
     }
-    console.log(req.params.id);
 	Users.findById(req.params.id,function(err,user){
 		res.render('user', {
 	        title: "User",

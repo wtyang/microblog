@@ -2,9 +2,9 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var postsSchema = new Schema({
-	author : {
-		type : String,
-		default : "visitor"
+	author :  { 
+		type: Schema.Types.ObjectId, 
+		ref: 'User'
 	},
 	content : String,
 	date : {
@@ -15,7 +15,7 @@ var postsSchema = new Schema({
 
 postsSchema.statics = {
 	fetch : function(cb){
-		return this.find({}).sort("-date").exec(cb);
+		return this.find({}).populate('author').sort("-date").exec(cb);
 	}
 }
 Posts = mongoose.model('Posts',postsSchema);

@@ -31,7 +31,7 @@ app.use(express.static(path.join(__dirname, 'bower_components')));
 app.use(session({ 
   secret: 'microblog', 
   cookie: { 
-    maxAge: 600000 
+    maxAge: 3600000 
   }
 }));
 app.use(session({
