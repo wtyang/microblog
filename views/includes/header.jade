@@ -24,4 +24,5 @@ nav.navbar.navbar-default.navbar-fixed-top
 					a(href="/user/#{logeduser._id}") #{logeduser.name}
 				li
 					a(href="/logout") Logout
+					input#logedUser(type="hidden",data-id="#{logeduser._id}")
 				- }

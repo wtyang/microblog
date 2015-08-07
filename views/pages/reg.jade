@@ -8,20 +8,20 @@ block content
 					-if(err){
 						p= err
 					-}
-					form.form-horizontal(method="post",action="/reg")
+					form.form-horizontal(method="post",action="/reg", enctype='multipart/form-data')
 						.form-group
 							h2.text-center Register
 						.form-group
 							label.col-sm-3.control-label(for="userName") User Name
 							.col-sm-9
-								input#userName.form-control(type="text", placeholder="User name", required="", autofocus="",name="user[name]")
+								input#userName.form-control(type="text", placeholder="User name", required="", autofocus="",name="name")
 						.form-group
 							label.col-sm-3.control-label(for="inputPassword") Password
 							.col-sm-9
-								input#inputPassword.form-control(type="password", placeholder="Password", required="",name="user[password]")
+								input#inputPassword.form-control(type="password", placeholder="Password", required="",name="password")
 						.form-group
 							.col-sm-9.col-sm-offset-3
-								input#inputFace.form-control(type="file",name="user[face]")
+								input#inputFace.form-control(type="file",name="face")
 						.form-group
 							.col-sm-2.col-sm-offset-3
-								button.btn.btn-sm.btn-primary.btn-block.pull-left(type="submit") Sign in
+								button#regBtn.btn.btn-sm.btn-primary.btn-block.pull-left(type="submit") Sign in

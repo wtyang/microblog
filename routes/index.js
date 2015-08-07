@@ -2,7 +2,9 @@ var express = require('express');
 var moment = require('moment');
 var session = require('express-session');
 var cookie = require('cookie-parser');
-var multiparty = require('connect-multiparty');
+var multiparty = require('multiparty');
+var util = require('util');
+var fs = require('fs');
 var crypto = require('crypto');
 var mongoose = require('mongoose');
 var router = express.Router();
@@ -17,6 +19,7 @@ router.get('/', function(req, res, next) {
     var logeduser = req.session.user, //登录的用户对象
         currentPage = 1, //当前第几页
         totalPages ; //总页数
+    console.log(logeduser);
     if(!logeduser){
         res.redirect("/login");
     }else{
@@ -62,7 +65,25 @@ router.post('/',function(req,res,next){
         //获取当前分页页码，返回当前分页留言列表
         var currentPage = req.body.currentPage;
         Posts.fetchLimit(limitItems,currentPage,function(err,limitposts){
-            res.send(limitposts);
+            if(err){
+                throw err;
+            }else{
+                Posts.fetch(function(err, posts) {
+                    if(err){
+                        throw err;
+                    }else{
+                        var totalPages = Math.ceil(posts.length/limitItems);
+                        res.send({
+                            postlist : limitposts,
+                            pagination: { //分页信息
+                                currentPage : currentPage,//当前第几页
+                                totalPages : totalPages, //总页数
+                                numberOfPages : totalPages > numberOfPages ? numberOfPages : totalPages //分页显示几页
+                            }
+                        });
+                    }
+                });
+            }
         })
     }
 })
@@ -76,28 +97,72 @@ router.get('/reg', function(req, res, next) {
     });
 });
 //注册post
-router.post('/reg', function(req, res, next) {
+router.post('/reg',function(req, res, next) {
     var logeduser = req.session.user;
-    var user = req.body.user;
     var _user;
-    Users.findByName(user.name,function(err,useritem){
-        if(err){
-            console.log(err);
-        }else if(!useritem){
-            _user = new Users(user);
-            _user.save(function(err) {
-                if (err) {
-                    req.flash('error', err);
-                } else {
-                    req.session.user = _user;
-                    res.redirect('/');
+    var form = new multiparty.Form({uploadDir: './public/uploads/'});
+    form.parse(req, function(err, fields, files) {
+        if (err) {
+            console.log('parse error: ' + err);
+        } else {
+            var filesTmp = JSON.stringify(files);
+            Users.findByName(fields['name'],function(err,useritem){
+                if(err){
+                    console.log(err);
+                }else if(!useritem){
+                    var inputFile = files['face'][0];
+                    var uploadedPath = inputFile.path;
+                    var dstPath = './public/uploads/' + inputFile.originalFilename;
+                    console.log(dstPath);
+                    //重命名为真实文件名
+                    fs.rename(uploadedPath, dstPath, function(err) {
+                        var user;
+                        if (err) {
+                            console.log('rename error: ' + err);
+                            user = {
+                                name : fields['name'],
+                                password : fields['password'],
+                            }
+                        } else {
+                            user = {
+                                name : fields['name'],
+                                password : fields['password'],
+                                face : '/uploads/' + inputFile.originalFilename
+                            }
+                            
+                        }
+                        _user = new Users(user);
+                        _user.save(function(err) {
+                            if (err) {
+                                req.flash('error', err);
+                            } else {
+                                Users.findByName(user.name,function(err,logeduser){
+                                    if(err){
+                                        console.log(err);
+                                    }else{
+                                        req.session.user = logeduser;
+                                        res.redirect('/');
+                                    }
+                                })
+                            }
+                        });
+                    });
+                    
+                }else{
+                    console.log("已存在");
+                    fs.unlink(files['face'][0].path, function (err) {
+                        if (err) {
+                            throw err;
+                        }else{
+                            console.log('successfully deleted : ' + filesTmp.path);
+                            res.redirect('back');
+                        }
+                    });
                 }
-            });
-        }else{
-            res.redirect('back');
-            console.log("已存在");
+            })
         }
-    })
+    });
+    
     
 })
 //登录get
@@ -124,6 +189,7 @@ router.post('/login', function(req, res, next) {
             console.log('PWD input: '+tryuser.password);
             res.redirect('back');
         }else{
+            console.log(user);
             req.session.user = user;
             console.log('login success!');
             res.redirect('/');

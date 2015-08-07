@@ -47,3 +47,17 @@ img{
 .pagination a{
 	cursor: pointer;
 }
+.post-item .panel-body{
+	position: relative;
+}
+.post-item .panel-body .close{
+	position: absolute;
+	right: 5px;
+	top:5px;
+	width: 20px;
+	height: 20px;
+	font-size: 20px;
+	line-height: 20px;
+	text-align: center;
+	z-index: 9;
+}
