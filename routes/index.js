@@ -105,68 +105,87 @@ router.get('/reg', function(req, res, next) {
 })
 .post('/reg',function(req, res, next) {
     var logeduser = req.session.user;
+    res.locals.error ={};
     var _user;
-    var form = new multiparty.Form({uploadDir: './public/uploads/'});
+    var form = new multiparty.Form({
+        uploadDir: './public/uploads/',
+        maxFieldsSize  : "500KB"
+    });
     form.parse(req, function(err, fields, files) {
         if (err) {
             console.log('parse error: ' + err);
         } else {
-            var filesTmp = JSON.stringify(files);
-            Users.findByName(fields['name'],function(err,useritem){
-                if(err){
-                    console.log(err);
-                }else if(!useritem){
-                    var inputFile = files['face'][0];
-                    var uploadedPath = inputFile.path;
-                    var dstPath = './public/uploads/' + inputFile.originalFilename;
-                    console.log(dstPath);
-                    //重命名为真实文件名
-                    fs.rename(uploadedPath, dstPath, function(err) {
-                        var user;
-                        if (err) {
-                            console.log('rename error: ' + err);
-                            user = {
-                                name : fields['name'],
-                                password : fields['password'],
+            var date = (new Date()).getTime();
+            var inputFile = files['face'][0]; // 上传的文件
+            var oriName = inputFile.originalFilename; // 上传的文件名
+            var uploadedPath = inputFile.path;//上传的文件路径
+            var dstName = date+'_' +Math.random()+'_'+ oriName;
+            var dstPath = './public/uploads/'+dstName ;//需要保存到的文件路径
+            var photoReg = (/\.(jpe?g|gif|png|bmp)$/i); //图片后缀正则
+            var filesTmp = JSON.stringify(files); //JSON 后的文件对象
+            if(oriName && !photoReg.test(oriName.toLowerCase())){  //上传了头像，但是文件格式错误
+                //判断头像是否是图片
+                console.log('not image');
+                res.locals.error.face = "格式不正确，请上传png或者jpg格式图片";
+                res.render('reg',{});
+            }else{
+                Users.findByName(fields['name'],function(err,useritem){
+                    if(err){
+                        console.log(err);
+                    }else if(!useritem){ //验证用户是否存在
+                        //重命名为真实文件路名径
+                        fs.rename(uploadedPath, dstPath, function(err) {
+                            var user={};
+                            if(err){
+                                throw err;
+                                console.log('rename error: ' + err);
                             }
-                        } else {
-                            user = {
-                                name : fields['name'],
-                                password : fields['password'],
-                                face : '/uploads/' + inputFile.originalFilename
-                            }
-                            
-                        }
-                        _user = new Users(user);
-                        _user.save(function(err) {
-                            if (err) {
-                                req.flash('error', err);
+                            if (!oriName) {
+                                user = {
+                                    name : fields['name'],
+                                    password : fields['password'],
+                                }
                             } else {
-                                Users.findByName(user.name,function(err,logeduser){
-                                    if(err){
-                                        console.log(err);
-                                    }else{
-                                        req.session.user = logeduser;
-                                        res.redirect('/');
-                                    }
-                                })
+                                user = {
+                                    name : fields['name'],
+                                    password : fields['password'],
+                                    face : '/uploads/' +dstName
+                                }
+                                
+                            }
+                            _user = new Users(user);
+                            _user.save(function(err) {
+                                if (err) {
+                                    console.log(err);
+                                } else {
+                                    Users.findByName(user.name,function(err,logeduser){
+                                        if(err){
+                                            console.log(err);
+                                        }else{
+                                            req.session.user = logeduser;
+                                            res.redirect('/');
+                                        }
+                                    })
+                                }
+                            });
+                        });                    
+                    }else{
+                        console.log("已存在");
+                        fs.unlink('./'+files['face'][0].path, function (err) {
+                            console.log(err);
+                            if (err) {
+                                throw err;
+                            }else{
+                                console.log('successfully deleted : ' + files['face'][0].path);
+                                res.locals.error.username = "用户名已存在";
+                                res.render('reg',{});   
                             }
                         });
-                    });
-                    
-                }else{
-                    console.log("已存在");
-                    fs.unlink(files['face'][0].path, function (err) {
-                        if (err) {
-                            throw err;
-                        }else{
-                            console.log('successfully deleted : ' + filesTmp.path);
-                            res.redirect('back');
-                        }
-                    });
-                }
-            })
+                    }
+                });
+            }
         }
+        
     });
     
     

@@ -5,9 +5,6 @@ block content
 		.row
 			.col-sm-6.col-sm-offset-3.col-login.panel
 				.panel-body
-					-if(err){
-						p= err
-					-}
 					form.form-horizontal(method="post",action="/reg", enctype='multipart/form-data')
 						.form-group
 							h2.text-center Register
@@ -15,13 +12,31 @@ block content
 							label.col-sm-3.control-label(for="userName") User Name
 							.col-sm-9
 								input#userName.form-control(type="text", placeholder="User name", required="", autofocus="",name="name")
+								-if(locals.error && locals.error.username){
+									.text-danger.form-control-static= locals.error.username
+								-}
 						.form-group
 							label.col-sm-3.control-label(for="inputPassword") Password
 							.col-sm-9
 								input#inputPassword.form-control(type="password", placeholder="Password", required="",name="password")
+								-if(locals.error && locals.error.password){
+									.text-danger.form-control-static= locals.error.password
+								-}
 						.form-group
 							.col-sm-9.col-sm-offset-3
 								input#inputFace.form-control(type="file",name="face")
+								-if(locals.error && locals.error.face){
+									.text-danger.form-control-static= locals.error.face
+								-}
 						.form-group
 							.col-sm-2.col-sm-offset-3
 								button#regBtn.btn.btn-sm.btn-primary.btn-block.pull-left(type="submit") Sign in
+					script.
+						$(function(){
+							$(".text-danger").prev("input").on("keyup", function(){
+								$(this).next(".text-danger").remove();
+							});
+							$(".text-danger").prev("input[type=file]").on("blur", function(){
+								$(this).next(".text-danger").remove();
+							})
+						});
