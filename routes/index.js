@@ -14,12 +14,11 @@ var Posts = require('../models/posts');
 
 var limitItems = 5,//分页每页显示几条留言
     numberOfPages = 5; //分页显示几页
-/* 首页get */
+/* 首页 */
 router.get('/', function(req, res, next) {
     var logeduser = req.session.user, //登录的用户对象
         currentPage = 1, //当前第几页
         totalPages ; //总页数
-    console.log(logeduser);
     if(!logeduser){
         res.redirect("/login");
     }else{
@@ -58,9 +57,8 @@ router.get('/', function(req, res, next) {
             }
         })
     }
-});
-
-router.post('/',function(req,res,next){
+})
+.post('/',function(req,res,next){
     if(req.body.currentPage){
         //获取当前分页页码，返回当前分页留言列表
         var currentPage = req.body.currentPage;
@@ -87,17 +85,25 @@ router.post('/',function(req,res,next){
         })
     }
 })
-
-//注册get
+.delete('/',function(req,res,next){
+    var id = req.body.postId;
+    Posts.remove({_id : id},function(err,removed){
+        if(err){
+            throw err;
+        }else{
+            res.send({success:1});
+        }
+    })
+})
+//注册
 router.get('/reg', function(req, res, next) {
     var logeduser = req.session.user;
     res.render('reg', {
         title: 'Register',
         logeduser : logeduser
     });
-});
-//注册post
-router.post('/reg',function(req, res, next) {
+})
+.post('/reg',function(req, res, next) {
     var logeduser = req.session.user;
     var _user;
     var form = new multiparty.Form({uploadDir: './public/uploads/'});
@@ -165,16 +171,15 @@ router.post('/reg',function(req, res, next) {
     
     
 })
-//登录get
+//登录
 router.get('/login', function(req, res, next) {
     var logeduser = req.session.user;
     res.render('login', {
         title: "Login",
         logeduser : logeduser
     });
-});
-//登录post
-router.post('/login', function(req, res, next) {
+})
+.post('/login', function(req, res, next) {
     var tryuser = req.body.user
     Users.findByName(tryuser.name,function(err,user){
         if(err){

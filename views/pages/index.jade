@@ -25,7 +25,7 @@ block content
 										button.form-control.btn.btn-primary(type="submit") 发布
 				#posts-list
 					each item in posts
-						.panel.post-item
+						.panel.post-item(data-id="#{item._id}")
 							.panel-body
 								-if(logeduser && (logeduser._id == item.author._id) ){
 									.close x
@@ -53,12 +53,16 @@ block content
 									numberOfPages:#{pagination.numberOfPages},
 									bootstrapMajorVersion: 3,
 									onPageClicked: function(e,originalEvent,type,page){
-										microblog.reloadPageWithData(page);
+										microblog.reloadPost(page);
 									}
 								}
 								if(options.totalPages){
 									$('#pagination').bootstrapPaginator(options);
 								}
+								$("#posts-list").delegate(".close","click",function(e){
+									var id = $(e.target).parents(".post-item").data("id");
+									microblog.rmPostById(id);
+								})
 							})
 			aside.col-sm-3
 				article.user-info

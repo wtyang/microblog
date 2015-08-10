@@ -1,6 +1,9 @@
 $(function(){
 	microblog = {
-		reloadPageWithData : function(page){
+		index : function(){
+
+		},
+		reloadPost : function(page){
 			/*
 			* @function pagination click updata posts list
 			* @param {number} current page
@@ -12,11 +15,17 @@ $(function(){
 					currentPage: page
 				},
 				success: function (data) {
-					var list = '';
+					/*
+					* data = {
+					*    postlist : {},					
+					*    pagination : {}					
+					* }
+					*/
+					var list = ''; //save formatted post list
 					var posts = data.postlist;
 					var paginOptions = data.pagination;
 					for(item in data.postlist){
-						list+='<div class="panel post-item"><div class="panel-body">';
+						list+='<div class="panel post-item" data-id='+posts[item]._id+'><div class="panel-body">';
 						if($("#logedUser").data('id') == posts[item].author._id){
 							list+='<div class="close">x</div>';
 						}
@@ -35,6 +44,31 @@ $(function(){
 					$('#pagination').bootstrapPaginator(paginOptions);
 				}
 			});
+		},
+		rmPostById : function(postid){
+			/*
+			* @function : remove post by post ID
+			* @postid {string}: post ID 
+			*/
+			var currentPage = $("#pagination li.active a").text();
+			$.ajax({
+				url: '/',
+				type: 'DELETE',
+				data: {
+					postId: postid
+				},
+			})
+			.done(function(data) {
+				microblog.reloadPost(currentPage);
+				console.log("success");
+			})
+			.fail(function() {
+				console.log("error");
+			})
+			.always(function() {
+				console.log("complete");
+			});
+			
 		}
 	}
 	return microblog;
