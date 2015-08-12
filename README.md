@@ -1,6 +1,8 @@
 # microblog
 Use NodeJS Express
 
+
+
 ##Install
 - git clone https://github.com/wtyang/microblog.git
 - cd microblog/
@@ -8,4 +10,5 @@ Use NodeJS Express
 - bower install
 
 ##Run
-npm start
+- mongod --dbpath mongodb/data/db
+- npm start
