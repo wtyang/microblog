@@ -52,7 +52,7 @@ microblog = (function(){
 							list+='</div><div class="col-xs-10"><div class="post-content"><p>';
 							list+=posts[item].author.name+'</p><p>';
 							list+=posts[item].content+'</p><p class="text-right"><small> 发布于: ';
-							list+=moment(posts[item].date).format("llll");
+							list+=moment(posts[item].date).format('MMMM Do YYYY, h:mm:ss a');
 							list+='</small></p></div></div></div></div></div>';
 						}
 						//更新post 列表

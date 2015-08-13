@@ -15,15 +15,21 @@ var userSchema = new Schema({
 	group: {
 		type : Number,
 		default: 3    /* 1:Super Admin ; 2:Admin; 3:User*/
+	},
+	online : {
+		type : Boolean,
+		detault: false
 	}
 });
-
 userSchema.statics = {
 	fetch : function(cb){
 		return this.find({}).sort('-date').exec(cb);
 	},
 	findByName: function(name,cb){
 		return this.findOne({name:name}).exec(cb);
+	},
+	findOnline: function(cb){
+		return this.find({online:true}).exec(cb);
 	}
 }
 var User = mongoose.model('User',userSchema);

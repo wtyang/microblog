@@ -11,8 +11,8 @@ block content
 						.form-group
 							label.col-sm-3.control-label(for="userName") 用户名
 							.col-sm-9
-								-if(user && user.username){
-									input#userName.form-control(type="text", placeholder="User name", required="", autofocus="",name="user[name]",value="#{user.username}")
+								-if(user && user.name){
+									input#userName.form-control(type="text", placeholder="User name", required="", autofocus="",name="user[name]",value="#{user.name}")
 								-}else{
 									input#userName.form-control(type="text", placeholder="User name", required="", autofocus="",name="user[name]")
 								-}
@@ -22,11 +22,7 @@ block content
 						.form-group
 							label.col-sm-3.control-label(for="inputPassword") 密 码
 							.col-sm-9
-								-if(user && user.password){
-									input#inputPassword.form-control(type="password", placeholder="Password", required="",name="user[password]",value="#{user.password}")
-								-}else{
-									input#inputPassword.form-control(type="password", placeholder="Password", required="",name="user[password]")
-								-}
+								input#inputPassword.form-control(type="password", placeholder="Password", required="",name="user[password]")
 								-if(locals.error && locals.error.password){
 									.text-danger.form-control-static= locals.error.password
 								-}

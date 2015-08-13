@@ -22,12 +22,20 @@ var hashSalt = function(pwd){
     var saltpwd = setting.salt+pwd;
     return md5.update(saltpwd).digest('hex');
 }
-console.log(session.Session);
+//清0在线人数
+Users.update({online:true},{online:false},function(err){
+    if(err){
+        console.log(err);
+    }else{
+        console.log('清除在线人数');
+    }
+});
 /* 首页 */
 router.get('/', function(req, res, next) {
     var logeduser = req.session.user, //登录的用户对象
         currentPage = 1, //当前第几页
         totalPages ; //总页数
+        console.log(res.session);
     if(!logeduser){
         res.redirect("/login");
     }else{
@@ -41,16 +49,32 @@ router.get('/', function(req, res, next) {
                     if(err){
                         console.log(err);
                     }else{
-                        //渲染页面
-                        var totalPages = Math.ceil(posts.length/limitItems); //总页面数
-                        res.render('index', {
-                            title: 'MicroBlog',
-                            posts: postslimit, //当前页面显示的留言列表
-                            logeduser : logeduser,// 登录的用户对象
-                            pagination: { //分页信息
-                                currentPage : currentPage,//当前第几页
-                                totalPages : totalPages, //总页数
-                                numberOfPages : totalPages > numberOfPages ? numberOfPages : totalPages //分页显示几页
+                        //记录在线
+                        Users.update({name:logeduser.name},{online:true},function(err,onlineuser){
+                            if(err){
+                                console.log(err);
+                            }else{
+                                //online用户
+                                Users.findOnline(function(err,onlineusers){
+                                    if(err){
+                                        console.log(err);
+                                    }else{
+                                        //渲染页面
+                                        var totalPages = Math.ceil(posts.length/limitItems); //总页面数
+                                        var onlinecount = onlineusers.length;
+                                        res.render('index', {
+                                            title: 'MicroBlog',
+                                            posts: postslimit, //当前页面显示的留言列表
+                                            logeduser : logeduser,// 登录的用户对象
+                                            onlinecount: onlinecount,
+                                            pagination: { //分页信息
+                                                currentPage : currentPage,//当前第几页
+                                                totalPages : totalPages, //总页数
+                                                numberOfPages : totalPages > numberOfPages ? numberOfPages : totalPages //分页显示几页
+                                            }
+                                        });
+                                    }
+                                })
                             }
                         });
                     }
@@ -99,10 +123,14 @@ router.get('/', function(req, res, next) {
 //注册
 router.get('/reg', function(req, res, next) {
     var logeduser = req.session.user;
-    res.render('reg', {
-        title: 'Register',
-        logeduser : logeduser
-    });
+    if(logeduser){
+        res.redirect('/');
+    }else{
+        res.render('reg', {
+            title: 'Register',
+            logeduser : logeduser
+        });
+    }
 })
 .post('/reg',function(req, res, next) {
     var logeduser = req.session.user;
@@ -146,6 +174,7 @@ router.get('/reg', function(req, res, next) {
                             var user = {
                                     name : fields['name'],
                                     password : hashSalt(fields['password']),
+                                    date:Date.now()
                                 };
                             if(err){
                                 throw err;
@@ -194,10 +223,14 @@ router.get('/reg', function(req, res, next) {
 //登录
 router.get('/login', function(req, res, next) {
     var logeduser = req.session.user;
-    res.render('login', {
-        title: "Login",
-        logeduser : logeduser
-    });
+    if(logeduser){
+        res.redirect('/');
+    }else{
+        res.render('login', {
+            title: "Login",
+            logeduser : logeduser
+        });
+    }
 })
 .post('/login', function(req, res, next) {
     var tryuser = req.body.user;
@@ -214,14 +247,15 @@ router.get('/login', function(req, res, next) {
             console.log('User name or Password error');
             res.locals.error.password = '用户名或密码错误';
             res.render('login',{
-                user: {
-                    username : tryuser.username,
-                    password : tryuser.password
-                }
+                user: tryuser
             });
             // console.log('PWD status: '+(hashSalt(tryuser.password)!== user.password));
             // console.log('PWD query: '+ user.password);
             // console.log('PWD input: '+ hashSalt(tryuser.password));
+        }else if(user.online === true){
+            res.locals.error.username = "此用户已登录";
+            console.log(tryuser);
+            res.render('login',{user:tryuser});
         }else{
             console.log(user);
             req.session.user = user;
@@ -238,7 +272,8 @@ router.post('/post', function(req, res, next) {
     var _post;
     _post = new Posts({
         author: post.author,
-        content: post.content
+        content: post.content,
+        date:Date.now()
     });
     _post.save(function(err) {
         if (err) {
@@ -251,8 +286,11 @@ router.post('/post', function(req, res, next) {
 //退出get
 router.get('/logout', function(req, res, next) {
     var logeduser = req.session.user;
-    req.session.user = null;
-    res.redirect("/login");
+    console.log(logeduser);
+    Users.update({name:logeduser.name},{online:false},function(err){
+        req.session.user = null;
+        res.redirect("/login");
+    })
 });
 //用户get
 router.get('/user/:id', function(req, res, next) {

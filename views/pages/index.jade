@@ -3,7 +3,10 @@ block content
 	.container
 		.row
 			nav.col-sm-2
-				p=ua
+				p.text-primary 
+					|当前有 
+					b #{onlinecount}
+					|人已登录此网站
 			section.col-sm-7.section-main
 				.panel
 					.panel-body
@@ -38,7 +41,7 @@ block content
 											p= item.content
 											p.text-right
 												small 
-													| 发布于: #{moment(item.date).format('llll')}
+													| 发布于: #{moment(item.date).format('MMMM Do YYYY, h:mm:ss a')}
 				.row.show-grid
 					nav.col-sm-12.text-center
 						ul.pagination#pagination

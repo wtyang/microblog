@@ -35,7 +35,7 @@ app.use(function(req, res, next) {
 app.use(session({ 
   secret: 'microblog', 
   cookie: { 
-    maxAge: 24*7*60*60*1000
+    maxAge: 1000*60*60*24*7
   }
 }));
 app.use(session({
@@ -59,13 +59,6 @@ app.use(function (req, res, next) {
  
   next()
 })
-
-// Clients
-
-// app.use(function(req, res, next) {
-//     var ua = req.headers['user-agent'];
-//     client.zadd('online', Date.now(), ua, next);
-// });
 
 // Routers
 app.use('/', routes);
