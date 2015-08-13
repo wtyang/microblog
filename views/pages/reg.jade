@@ -9,34 +9,28 @@ block content
 						.form-group
 							h2.text-center Register
 						.form-group
-							label.col-sm-3.control-label(for="userName") User Name
+							label.col-sm-3.control-label(for="userName") 用户名
 							.col-sm-9
 								input#userName.form-control(type="text", placeholder="User name", required="", autofocus="",name="name")
 								-if(locals.error && locals.error.username){
 									.text-danger.form-control-static= locals.error.username
 								-}
 						.form-group
-							label.col-sm-3.control-label(for="inputPassword") Password
+							label.col-sm-3.control-label(for="inputPassword") 密码
 							.col-sm-9
 								input#inputPassword.form-control(type="password", placeholder="Password", required="",name="password")
+								small 6-18位只能包含大小写字母，数字，@，_，-，*
 								-if(locals.error && locals.error.password){
 									.text-danger.form-control-static= locals.error.password
 								-}
 						.form-group
-							.col-sm-9.col-sm-offset-3
+							.col-sm-3.control-label(for="inputFace") 头像
+							.col-sm-9
 								input#inputFace.form-control(type="file",name="face")
 								-if(locals.error && locals.error.face){
 									.text-danger.form-control-static= locals.error.face
 								-}
 						.form-group
 							.col-sm-2.col-sm-offset-3
-								button#regBtn.btn.btn-sm.btn-primary.btn-block.pull-left(type="submit") Sign in
-					script.
-						$(function(){
-							$(".text-danger").prev("input").on("keyup", function(){
-								$(this).next(".text-danger").remove();
-							});
-							$(".text-danger").prev("input[type=file]").on("blur", function(){
-								$(this).next(".text-danger").remove();
-							})
-						});
+								button#regBtn.btn.btn-sm.btn-primary.btn-block.pull-left(type="submit") 注册
+						

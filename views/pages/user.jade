@@ -11,12 +11,89 @@ block content
 						.form-group
 							label.control-label.col-sm-3 ID
 							.form-control-static.col-sm-9
-								span #{user._id}
+								span#id #{user._id}
 						.form-group
 							label.control-label.col-sm-3 昵称
 							.form-control-static.col-sm-9
-								span #{user.name}
+								span#name #{user.name}
 						.form-group
 							label.control-label.col-sm-3 头像
 							.form-control-static.col-sm-9
-								img(src="#{user.face}")
+								img#face(src="#{user.face}",width="100")
+						-if(logeduser && (logeduser._id == user._id) ){
+							.form-group
+							.col-sm-3.col-sm-offset-3.text-center
+								button.btn.btn-primary(type="button",data-toggle="modal",data-target="#editModal") 编辑
+							.col-sm-3.text-center
+								button.btn.btn-danger(type="button",data-toggle="modal",data-target="#deleteModal") 删除
+						-}
+	-if(logeduser && (logeduser._id == user._id) ){			
+		.modal.fade#deleteModal(role="dialog")
+			.modal-dialog
+				.modal-content
+					.modal-header
+						button.close(data-dismiss="modal")
+						h4.text-danger.modal-title 前方高能预警！！
+					.modal-body
+						| 确定一定以及肯定要删了自己么？
+					.modal-footer
+						.btn.btn-primary(data-dismiss="modal") 拉倒吧不扯淡了
+						.btn.btn-danger#deleteUser 不管，就是删
+		.modal.fade#editModal(role="dialog")
+			.modal-dialog
+				.modal-content
+					.modal-header
+						button.close(data-dismiss="modal")
+						h4.modal-title 信息修改
+					.modal-body
+						form.form-horizontal#userForm
+							input#inputId(type="hidden",name="id",value="#{user._id}")
+							.form-group
+								label.col-sm-2.control-label(for="userName") 用户名
+								.col-sm-10
+									input#userName.form-control(type="text", placeholder="User name", required="", autofocus="",name="name",value="#{user.name}")
+									-if(locals.error && locals.error.username){
+										.text-danger.form-control-static= locals.error.username
+									-}
+							.form-group
+								.col-sm-2.control-label(for="inputFace") 头像
+								.col-sm-10
+									input#inputFace.form-control(type="file",name="face",value="#{user.face}")
+									-if(locals.error && locals.error.face){
+										.text-danger.form-control-static= locals.error.face
+									-}
+					.modal-footer
+						.btn.btn-primary(data-dismiss="modal") 拉倒吧不扯淡了
+						.btn.btn-success#updateUser 改好了！:)
+		script.
+			$(function(){
+				$("#updateUser").click(function(){
+					$.ajax({
+						url: '/user/update',
+						type: 'POST',
+						data: $('#userForm').serialize()
+					})
+					.done(function(data) {
+						$("#name").text(data.name);
+						$("#editModal").modal('hide');
+					})
+					.fail(function() {
+						console.log("error");
+					})
+					.always(function() {
+						console.log("complete");
+					});
+				});
+
+				$("#deleteUser").click(function(){
+					$.ajax({
+						url:'/user/delete',
+						type:"DELETE",
+						data: {id:$("#inputId").val()}
+					})
+					.done(function(data){
+						window.location.href="/login";
+					})
+				})
+			});
+	-}

@@ -10,10 +10,19 @@ var mongoose = require('mongoose');
 var router = express.Router();
 var Users = require('../models/user');
 var Posts = require('../models/posts');
-
-
+var setting = {
+    salt:"IzLhOAvOeLyIOnU"
+}
+//globle
 var limitItems = 5,//分页每页显示几条留言
     numberOfPages = 5; //分页显示几页
+// Tools
+var hashSalt = function(pwd){
+    var md5 = crypto.createHash('md5');
+    var saltpwd = setting.salt+pwd;
+    return md5.update(saltpwd).digest('hex');
+}
+console.log(session.Session);
 /* 首页 */
 router.get('/', function(req, res, next) {
     var logeduser = req.session.user, //登录的用户对象
@@ -32,24 +41,16 @@ router.get('/', function(req, res, next) {
                     if(err){
                         console.log(err);
                     }else{
-                        //查询所有用户列表
-                        Users.fetch(function(err, users) {
-                            if (err) {
-                                req.flash('error', err);
-                            }else{
-                                //渲染页面
-                                var totalPages = Math.ceil(posts.length/limitItems); //总页面数
-                                res.render('index', {
-                                    title: 'MicroBlog',
-                                    posts: postslimit, //当前页面显示的留言列表
-                                    users: users, //所有用户列表
-                                    logeduser : logeduser,// 登录的用户对象
-                                    pagination: { //分页信息
-                                        currentPage : currentPage,//当前第几页
-                                        totalPages : totalPages, //总页数
-                                        numberOfPages : totalPages > numberOfPages ? numberOfPages : totalPages //分页显示几页
-                                    }
-                                });
+                        //渲染页面
+                        var totalPages = Math.ceil(posts.length/limitItems); //总页面数
+                        res.render('index', {
+                            title: 'MicroBlog',
+                            posts: postslimit, //当前页面显示的留言列表
+                            logeduser : logeduser,// 登录的用户对象
+                            pagination: { //分页信息
+                                currentPage : currentPage,//当前第几页
+                                totalPages : totalPages, //总页数
+                                numberOfPages : totalPages > numberOfPages ? numberOfPages : totalPages //分页显示几页
                             }
                         });
                     }
@@ -123,6 +124,8 @@ router.get('/reg', function(req, res, next) {
             var dstPath = './public/uploads/'+dstName ;//需要保存到的文件路径
             var photoReg = (/\.(jpe?g|gif|png|bmp)$/i); //图片后缀正则
             var filesTmp = JSON.stringify(files); //JSON 后的文件对象
+            var pa=/^[a-zA-Z0-9\@\_\-\*]{6,18}$/;//密码格式验证
+            
             if(oriName && !photoReg.test(oriName.toLowerCase())){  //上传了头像，但是文件格式错误
                 //判断头像是否是图片
                 console.log('not image');
@@ -134,24 +137,22 @@ router.get('/reg', function(req, res, next) {
                         console.log(err);
                     }else if(!useritem){ //验证用户是否存在
                         //重命名为真实文件路名径
+                        if(!pa.test(fields['password'])){
+                            res.locals.error.password = "密码格式不正确";
+                            res.render('reg',{});
+                            return false;
+                        }
                         fs.rename(uploadedPath, dstPath, function(err) {
-                            var user={};
+                            var user = {
+                                    name : fields['name'],
+                                    password : hashSalt(fields['password']),
+                                };
                             if(err){
                                 throw err;
                                 console.log('rename error: ' + err);
                             }
-                            if (!oriName) {
-                                user = {
-                                    name : fields['name'],
-                                    password : fields['password'],
-                                }
-                            } else {
-                                user = {
-                                    name : fields['name'],
-                                    password : fields['password'],
-                                    face : '/uploads/' +dstName
-                                }
-                                
+                            if (oriName) {
+                                user.face = '/uploads/' +dstName;
                             }
                             _user = new Users(user);
                             _user.save(function(err) {
@@ -199,19 +200,28 @@ router.get('/login', function(req, res, next) {
     });
 })
 .post('/login', function(req, res, next) {
-    var tryuser = req.body.user
+    var tryuser = req.body.user;
+    res.locals.error = {};
     Users.findByName(tryuser.name,function(err,user){
         if(err){
             req.flash('error',err);
         }else if(!user){
             console.log('no such user');
-            res.redirect('back');
-        }else if(tryuser.password !== user.password){
+            res.locals.error.username = '没有这个用户';
+            res.render('login',{});
+        }else if(hashSalt(tryuser.password) !== user.password ){
+            console.log(hashSalt(tryuser.password));
             console.log('User name or Password error');
-            console.log('PWD status: '+(tryuser.password === user.password));
-            console.log('PWD query: '+user.password);
-            console.log('PWD input: '+tryuser.password);
-            res.redirect('back');
+            res.locals.error.password = '用户名或密码错误';
+            res.render('login',{
+                user: {
+                    username : tryuser.username,
+                    password : tryuser.password
+                }
+            });
+            // console.log('PWD status: '+(hashSalt(tryuser.password)!== user.password));
+            // console.log('PWD query: '+ user.password);
+            // console.log('PWD input: '+ hashSalt(tryuser.password));
         }else{
             console.log(user);
             req.session.user = user;
@@ -232,7 +242,7 @@ router.post('/post', function(req, res, next) {
     });
     _post.save(function(err) {
         if (err) {
-            req.flash('error', err);
+            console.log(err);
         } else {
             res.redirect("/");
         }
@@ -249,14 +259,63 @@ router.get('/user/:id', function(req, res, next) {
     var logeduser = req.session.user;
     if(!logeduser){
         res.redirect("/login");
+    }else{
+    	Users.findById(req.params.id,function(err,user){
+    		res.render('user', {
+    	        title: "User",
+    	        user: user,
+                logeduser : logeduser
+    	    });
+    	})
     }
-	Users.findById(req.params.id,function(err,user){
-		res.render('user', {
-	        title: "User",
-	        user: user,
-            logeduser : logeduser
-	    });
-	})
-    
 });
+router.post('/user/update',function(req,res,next){
+    var reqmsg = req.body;
+    var updateMsg = {
+        name: reqmsg.name,
+        //password : reqmsg.password,
+        //face : reqmsg.face,
+        updateDate : new Date()
+    }
+    // console.log('reqmsg : ');
+    // console.log(reqmsg);
+    // console.log(updateMsg);
+
+    Users.update({_id:reqmsg.id},updateMsg,{multi:true},function(err,data){
+        if(err){
+            console.log(err);
+        }else{
+            console.log(updateMsg);
+            res.send(updateMsg);
+        }
+    });
+})
+router.delete('/user/delete',function(req,res,next){
+    var id = req.body.id;
+    console.log(id);
+    Posts.remove({author:id},function(err){
+        if(err){
+            console.log(err);
+        }else{
+            Users.findById(id,function(err,useritem){
+                if(err){
+                    console.log(err);
+                }else{
+                    fs.unlink('.'+useritem.face,function(err){
+
+                    })
+                }
+            })
+            Users.remove({_id:id},function(err){
+                if(err){
+                    console.log(err);
+                }else{
+                    req.session.user = null;
+                    res.send({"success":1});
+                }
+            })
+        }
+    })
+    
+})
 module.exports = router;

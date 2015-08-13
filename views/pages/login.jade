@@ -9,19 +9,33 @@ block content
 						.form-group
 							h2.text-center Please sign in
 						.form-group
-							label.col-sm-3.control-label(for="userName") User Name
+							label.col-sm-3.control-label(for="userName") 用户名
 							.col-sm-9
-								input#userName.form-control(type="text", placeholder="User name", required="", autofocus="",name="user[name]")
+								-if(user && user.username){
+									input#userName.form-control(type="text", placeholder="User name", required="", autofocus="",name="user[name]",value="#{user.username}")
+								-}else{
+									input#userName.form-control(type="text", placeholder="User name", required="", autofocus="",name="user[name]")
+								-}
+								-if(locals.error && locals.error.username){
+									.text-danger.form-control-static= locals.error.username
+								-}
 						.form-group
-							label.col-sm-3.control-label(for="inputPassword") Password
+							label.col-sm-3.control-label(for="inputPassword") 密 码
 							.col-sm-9
-								input#inputPassword.form-control(type="password", placeholder="Password", required="",name="user[password]")
+								-if(user && user.password){
+									input#inputPassword.form-control(type="password", placeholder="Password", required="",name="user[password]",value="#{user.password}")
+								-}else{
+									input#inputPassword.form-control(type="password", placeholder="Password", required="",name="user[password]")
+								-}
+								-if(locals.error && locals.error.password){
+									.text-danger.form-control-static= locals.error.password
+								-}
 						.form-group
 							.col-sm-9.col-sm-offset-3
 								.checkbox
 									label
 										input(type="checkbox", value="remember-me")
-										| Remember me
+										| 记住我
 						.form-group
 							.col-sm-2.col-sm-offset-3
-								button.btn.btn-sm.btn-primary.btn-block.pull-left(type="submit") Sign in
+								button.btn.btn-sm.btn-primary.btn-block.pull-left(type="submit") 登录

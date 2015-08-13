@@ -12,7 +12,7 @@ var parseurl = require('parseurl');
 var routes = require('./routes/index');
 var db = mongoose.connect("mongodb://localhost/microblog");
 var app = express();
-app.locals.moment = require('moment')
+app.locals.moment = require('moment');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views/pages'));
@@ -27,11 +27,15 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'bower_components')));
+app.use(function(req, res, next) {
+  res.locals.ua = req.get('User-Agent');
+  next();
+});
 // Session
 app.use(session({ 
   secret: 'microblog', 
   cookie: { 
-    maxAge: 3600000 
+    maxAge: 24*7*60*60*1000
   }
 }));
 app.use(session({
@@ -43,7 +47,6 @@ app.use(session({
 app.use(cookieParser());
 app.use(function (req, res, next) {
   var views = req.session.views
- 
   if (!views) {
     views = req.session.views = {}
   }
@@ -56,6 +59,14 @@ app.use(function (req, res, next) {
  
   next()
 })
+
+// Clients
+
+// app.use(function(req, res, next) {
+//     var ua = req.headers['user-agent'];
+//     client.zadd('online', Date.now(), ua, next);
+// });
+
 // Routers
 app.use('/', routes);
 

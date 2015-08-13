@@ -3,9 +3,7 @@ block content
 	.container
 		.row
 			nav.col-sm-2
-				ul
-					li
-						a(href='/') Home
+				p=ua
 			section.col-sm-7.section-main
 				.panel
 					.panel-body
@@ -19,7 +17,7 @@ block content
 								h5 有什么新鲜事想告诉大家?
 								.form-group
 									.col-sm-12
-										textarea.form-control(rows=3,name="post[content]")
+										textarea.form-control(rows=3,name="post[content]",required="")
 								.form-group
 									.col-sm-2.col-sm-offset-10
 										button.form-control.btn.btn-primary(type="submit") 发布
@@ -53,7 +51,7 @@ block content
 									numberOfPages:#{pagination.numberOfPages},
 									bootstrapMajorVersion: 3,
 									onPageClicked: function(e,originalEvent,type,page){
-										microblog.reloadPost(page);
+										microblog.postFun.reloadPost(page);
 									}
 								}
 								if(options.totalPages){
@@ -61,13 +59,15 @@ block content
 								}
 								$("#posts-list").delegate(".close","click",function(e){
 									var id = $(e.target).parents(".post-item").data("id");
-									microblog.rmPostById(id);
+									microblog.postFun.rmPostById(id);
 								})
 							})
 			aside.col-sm-3
 				article.user-info
-					each item in users
-						p
-							a(href="/user/#{item._id}")= item.name
+					.row
+						.col-sm-4
+							img#face(src="#{logeduser.face}",width="80")
+						.col-sm-8
+							span#name #{logeduser.name}
 				article.ad
 				article.announcement

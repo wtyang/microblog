@@ -11,12 +11,16 @@ var userSchema = new Schema({
 	date : {
 		type: Date,
 		default : Date.now()
+	},
+	group: {
+		type : Number,
+		default: 3    /* 1:Super Admin ; 2:Admin; 3:User*/
 	}
 });
 
 userSchema.statics = {
 	fetch : function(cb){
-		return this.find({}).exec(cb);
+		return this.find({}).sort('-date').exec(cb);
 	},
 	findByName: function(name,cb){
 		return this.findOne({name:name}).exec(cb);
